@@ -18,7 +18,7 @@ go run main.go [options]
 | Flag       | Default                | Description                                                              |
 |------------|------------------------|--------------------------------------------------------------------------|
 | `seed`     | Current Unix timestamp | Random seed for reproducibility                                          |
-| `output`   | `output.mp4`           | Output video file                                                        |
+| `output`   | *(none)*               | Output video file (fallbacks to realtime playback mode if omitted)       |
 | `sounds`   | `sounds`               | Directory containing sound files                                         |
 | `image`    | *(none)*               | Path to an image file for the video background (black screen if omitted) |
 | `interval` | `1m`                   | Average time between sounds                                              |
@@ -27,11 +27,14 @@ go run main.go [options]
 ## Examples
 
 ```bash
-# Generate a 1-hour video with default settings
+# Run in realtime playback mode with default settings
 go run main.go
 
+# Generate a 1-hour video with default settings
+go run main.go -output meme.mp4
+
 # Use a specific background image and custom duration
-go run main.go -image background.png -duration 30m
+go run main.go -output meme.mp4 -image background.png -duration 30m
 
 # Use a fixed seed for reproducible output
 go run main.go -seed 42
