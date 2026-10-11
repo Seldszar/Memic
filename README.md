@@ -30,16 +30,18 @@ All regular files directly inside the input directory are used as clips. Subdire
 
 ## Options
 
-| Flag        | Default                | Description                                                  |
-|-------------|------------------------|--------------------------------------------------------------|
-| `input`     | `sounds`               | Directory containing sound files                             |
-| `seed`      | Current Unix timestamp | Random seed for reproducibility                              |
-| `delay[lo]` | `60`                   | Minimum delay between sounds, in seconds                     |
-| `delay[hi]` | `120`                  | Maximum delay between sounds, in seconds                     |
-| `pan[lo]`   | `0`                    | Minimum stereo pan (`-1` = left, `1` = right)                |
-| `pan[hi]`   | `0`                    | Maximum stereo pan (`-1` = left, `1` = right)                |
-| `pitch[lo]` | `0.5`                  | Minimum pitch (`< 1` = slower/deeper, `> 1` = faster/higher) |
-| `pitch[hi]` | `2`                    | Maximum pitch (`< 1` = slower/deeper, `> 1` = faster/higher) |
+| Flag         | Default                | Description                                                  |
+|--------------|------------------------|--------------------------------------------------------------|
+| `input`      | `sounds`               | Directory containing sound files                             |
+| `seed`       | Current Unix timestamp | Random seed for reproducibility                              |
+| `delay[lo]`  | `60`                   | Minimum delay between sounds, in seconds                     |
+| `delay[hi]`  | `120`                  | Maximum delay between sounds, in seconds                     |
+| `pan[lo]`    | `0`                    | Minimum stereo pan (`-1` = left, `1` = right)                |
+| `pan[hi]`    | `0`                    | Maximum stereo pan (`-1` = left, `1` = right)                |
+| `pitch[lo]`  | `0.5`                  | Minimum pitch (`< 1` = slower/deeper, `> 1` = faster/higher) |
+| `pitch[hi]`  | `2`                    | Maximum pitch (`< 1` = slower/deeper, `> 1` = faster/higher) |
+| `volume[lo]` | `1`                    | Minimum volume (`1` = 100%)                                  |
+| `volume[hi]` | `1`                    | Maximum volume (`1` = 100%)                                  |
 
 ## Examples
 

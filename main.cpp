@@ -63,14 +63,23 @@ struct Args {
 	}
 };
 
-static std::expected<void, std::string> play_clip(ma_engine& engine, const std::filesystem::path& path, double pan, double pitch) {
+struct Clip {
+	const std::filesystem::path& path;
+
+	const double& pan;
+	const double& pitch;
+	const double& volume;
+};
+
+static std::expected<void, std::string> play_clip(ma_engine& engine, Clip& clip) {
 	ma_sound sound;
 
-	if (ma_sound_init_from_file(&engine, path.string().c_str(), 0, nullptr, nullptr, &sound) != MA_SUCCESS)
+	if (ma_sound_init_from_file(&engine, clip.path.string().c_str(), 0, nullptr, nullptr, &sound))
 		return std::unexpected("Failed to create sound");
 
-	ma_sound_set_pan(&sound, pan);
-	ma_sound_set_pitch(&sound, pitch);
+	ma_sound_set_pan(&sound, clip.pan);
+	ma_sound_set_pitch(&sound, clip.pitch);
+	ma_sound_set_volume(&sound, clip.volume);
 
 	ma_sound_start(&sound);
 
@@ -92,19 +101,26 @@ int main(int argc, char** argv) {
 	std::println();
 
 	auto input_path = args.get("input", "sounds");
-	auto seed = args.get("seed", time(nullptr));
+	auto random_seed = args.get("seed", time(nullptr));
+
 	auto delay_lo = args.get("delay[lo]", 60);
 	auto delay_hi = args.get("delay[hi]", 120);
+
 	auto pan_lo = args.get("pan[lo]", 0.);
 	auto pan_hi = args.get("pan[hi]", 0.);
+
 	auto pitch_lo = args.get("pitch[lo]", .5);
 	auto pitch_hi = args.get("pitch[hi]", 2.);
 
+	auto volume_lo = args.get("volume[lo]", 1.);
+	auto volume_hi = args.get("volume[hi]", 1.);
+
 	std::println("Input Path: \"{}\"", input_path);
-	std::println("Random Seed: {}", seed);
+	std::println("Random Seed: {}", random_seed);
 	std::println("Delay Range: {}-{} second(s)", delay_lo, delay_hi);
 	std::println("Pan Range: {}-{}", pan_lo, pan_hi);
 	std::println("Pitch Range: {}-{}", pitch_lo, pitch_hi);
+	std::println("Volume Range: {}-{}", volume_lo, volume_hi);
 	std::println();
 
 	auto clip_paths = std::filesystem::directory_iterator(input_path)
@@ -124,16 +140,17 @@ int main(int argc, char** argv) {
 
 	std::println();
 
-	std::mt19937 rng(seed);
+	std::mt19937 rng(random_seed);
 
 	std::uniform_int_distribution random_delay(delay_lo, delay_hi);
 	std::uniform_real_distribution random_pan(pan_lo, pan_hi);
 	std::uniform_real_distribution random_pitch(pitch_lo, pitch_hi);
+	std::uniform_real_distribution random_volume(volume_lo, volume_hi);
 	std::uniform_int_distribution<size_t> random_clip(0, clip_paths.size() - 1);
 
 	ma_engine engine;
 
-	if (ma_engine_init(nullptr, &engine) != MA_SUCCESS) {
+	if (ma_engine_init(nullptr, &engine)) {
 		std::println(stderr, "Failed to initialize audio engine");
 		return 1;
 	}
@@ -144,14 +161,17 @@ int main(int argc, char** argv) {
 	while (true) {
 		std::this_thread::sleep_for(std::chrono::duration<double>(random_delay(rng)));
 
-		const auto& clip_path = clip_paths.at(random_clip(rng));
+		Clip clip{
+			clip_paths.at(random_clip(rng)),
 
-		const auto& pan = random_pan(rng);
-		const auto& pitch = random_pitch(rng);
+			random_pan(rng),
+			random_pitch(rng),
+			random_volume(rng),
+		};
 
-		std::println("Playing \"{}\"... (pan={} pitch={})", clip_path.string(), pan, pitch);
+		std::println("Playing \"{}\"... (pan={} pitch={}, volume={})", clip.path.string(), clip.pan, clip.pitch, clip.volume);
 
-		if (auto r = play_clip(engine, clip_path, pan, pitch); !r)
+		if (auto r = play_clip(engine, clip); !r)
 			std::println(stderr, "Error while playing sound: {}", r.error());
 	}
 
