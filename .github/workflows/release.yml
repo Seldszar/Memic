@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          release-type: simple
+
+  build:
+    runs-on: windows-latest
+
+    needs:
+      - release-please
+
+    if: ${{ needs.release-please.outputs.created }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure
+        run: cmake -B build
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload Release Artifact
+        run: Compress-Archive -Path build/Release/*, README.md, LICENSE -Destination Env:\ARCHIVE_NAME && gh release upload ${{ needs.release-please.outputs.tag_name }} Env:ARCHIVE_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ matrix.platform }}-${{ needs.release-please.outputs.version }}.zip
